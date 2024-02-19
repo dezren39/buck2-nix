@@ -12,7 +12,7 @@
 
 ## ---------------------------------------------------------------------------------------------------------------------
 
-def _execution_platform_impl(ctx: "context") -> ["provider"]:
+def _execution_platform_impl(ctx: AnalysisContext) -> list[Provider]:
     constraints = dict()
     constraints.update(ctx.attrs.cpu_configuration[ConfigurationInfo].constraints)
     constraints.update(ctx.attrs.os_configuration[ConfigurationInfo].constraints)
@@ -89,14 +89,14 @@ __execution_platform = rule(
     },
 )
 
-def _host_cpu_configuration() -> str.type:
+def _host_cpu_configuration() -> str:
     arch = host_info().arch
     if arch.is_aarch64:
         return "prelude//platform/cpu:aarch64"
     else:
         return "prelude//platform/cpu:x86_64"
 
-def _host_os_configuration() -> str.type:
+def _host_os_configuration() -> str:
     os = host_info().os
     if os.is_macos:
         return "prelude//platform/os:darwin"
@@ -133,7 +133,7 @@ def generate_platforms(variants):
         )
 
     use_remote_by_default = False
-    re_enabled = read_root_config("buck2_re_client", "re_enabled", "false")
+    re_enabled = read_root_config("buck2_re_client", "enabled", "false")
     if host_info().os.is_linux and not host_info().arch.is_aarch64:
         use_remote_by_default = "true" == re_enabled
     if re_enabled == "force-true": # escape hatch

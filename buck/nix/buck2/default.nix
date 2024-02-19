@@ -10,7 +10,7 @@
 
 let
   rustChannel = "nightly";
-  rustVersion = "2023-01-24";
+  rustVersion = "2023-05-28";
 
   my-rust-bin = rust-bin."${rustChannel}"."${rustVersion}".default.override {
     extensions = [ "rust-analyzer" ];
@@ -23,20 +23,20 @@ let
 
 in rustPlatform.buildRustPackage rec {
   pname = "buck2";
-  version = "unstable-2023-04-17";
+  version = "unstable-2023-09-25";
 
   src = fetchFromGitHub {
     owner = "facebook";
     repo = "buck2";
-    rev = "8173e7e33415f9310125a4a0224d5588cf09e3b5";
-    hash = "sha256-RF2FZk4hEohKPdsIayFXGLa3rUQtX9NqdOO+vUr9EM0=";
+    rev = "7c0c983940e2d5397af7c2d1e02eccd0f087d44d";
+    hash = "sha256-r2egZc1cbLMyXe10ztQLLq0qHKSAgp2b8wk+x/fQtlM=";
   };
 
   cargoLock = {
     lockFile = ./Cargo.lock;
     outputHashes = {
       "perf-event-0.4.8" = "sha256-4OSGmbrL5y1g+wdA+W9DrhWlHQGeVCsMLz87pJNckvw=";
-      "tonic-0.8.3" = "sha256-xuQVixIxTDS4IZIN46aMAer3v4/81IQEG975vuNNerU=";
+      "hyper-proxy-0.10.1" = "sha256-qxOJntADYGuBr9jnzWJjiC7ApnkmF2R+OdXBGL3jIw8=";
     };
   };
 
@@ -49,19 +49,9 @@ in rustPlatform.buildRustPackage rec {
   doCheck = false;
   dontStrip = true; # XXX (aseipp): cargo will delete dwarf info but leave symbols for backtraces
 
-  patches = [
-    # Apply LTO and custom optimization settings to get a smaller binary.
-    ./custom-opt-settings.patch
+  patches = [ /* None, for now */ ];
 
-    # Remove the use of TLS in the remote execution client; see buck2 issue #156
-    ./remove-reapi-tls.patch
-  ];
-
-  # Put in the Cargo.lock file.
-  #
-  # XXX NOTE (aseipp): Also, for now, suppress a really annoying 'tracing'
-  # warning that makes the default build output uglier; once we self-bootstrap
-  # buck2 with buck2 under Nix (ugh...) then we can get rid of this.
+  # Put the Cargo.lock file in the build.
   postPatch = "cp ${./Cargo.lock} Cargo.lock";
 
   postInstall = ''

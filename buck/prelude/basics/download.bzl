@@ -12,7 +12,7 @@
 
 ## ---------------------------------------------------------------------------------------------------------------------
 
-def _download_tarball(ctx: "context") -> ["provider"]:
+def _download_tarball(ctx: AnalysisContext) -> list[Provider]:
     dl_script, _ = ctx.actions.write(
         "download_{}.sh".format(ctx.label.name),
         [
@@ -66,7 +66,7 @@ __tarball = rule(
 
 ## ---------------------------------------------------------------------------------------------------------------------
 
-def __file_impl(ctx: "context") -> ["provider"]:
+def __file_impl(ctx: AnalysisContext) -> list[Provider]:
     dl_script, _ = ctx.actions.write(
         "download_{}.sh".format(ctx.label.name),
         [
@@ -106,12 +106,12 @@ __file = rule(
 ## ---------------------------------------------------------------------------------------------------------------------
 
 def multi_tarball(attrs):
-    for (k, (url, hash)) in attrs.items():
-        __tarball(name = k, url = url, hash = hash)
+    for (k, kwargs) in attrs.items():
+        __tarball(name = k, **kwargs)
 
 def multi_file(attrs):
-    for (k, (url, hash)) in attrs.items():
-        __file(name = k, url = url, hash = hash)
+    for (k, kwargs) in attrs.items():
+        __file(name = k, **kwargs)
 
 ## ---------------------------------------------------------------------------------------------------------------------
 
