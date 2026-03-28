@@ -4,7 +4,10 @@ def _tests(ctx):
     # Create locally
     stage0 = ctx.actions.declare_output("stage0")
     ctx.actions.run(
-        ["sh", "-c", 'head -c 10 /dev/urandom > "$1"', "--", stage0.as_output()],
+        # NOTE: if you want to see caching work in action, change this to 'echo
+        # 42 > ...', then build, clean, and re-build. you'll have 60% cache hit
+        # rate (2 local, 3 cached hits)
+        ["sh", "-c", 'echo 42 > "$1"', "--", stage0.as_output()],
         category = "stage0",
         local_only = True,
     )

@@ -24,7 +24,7 @@ __toolchain_attrs = {
 RustToolchainInfo = provider(fields = __toolchain_attrs.keys())
 RustPlatformInfo = provider(fields = [ "name" ])
 
-def ctx2toolchain(ctx: "context") -> "RustToolchainInfo":
+def ctx2toolchain(ctx: AnalysisContext) -> RustToolchainInfo:
     info = ctx.attrs._toolchain[RustToolchainInfo]
     attrs = dict()
     for k, default in __toolchain_attrs.items():
@@ -32,7 +32,7 @@ def ctx2toolchain(ctx: "context") -> "RustToolchainInfo":
         attrs[k] = default if v == None else v
     return RustToolchainInfo(**attrs)
 
-def __toolchain_impl(ctx: "context") -> ["provider"]:
+def __toolchain_impl(ctx: AnalysisContext) -> list[Provider]:
     name = ctx.label.name
     channel = ctx.attrs.channel
     version = ctx.attrs.version
@@ -51,7 +51,7 @@ def __toolchain_impl(ctx: "context") -> ["provider"]:
             targets = [ {} ];
         }}""".format(attr, " ".join(extensions), " ".join(targets))
 
-    ps = nix.macros.build(ctx, "rust-{}-{}".format(channel, name), expr)
+    ps = nix.macros.build(ctx, name, expr)
     return (ps + [
         RustToolchainInfo(
             compiler = cmd_args(ps[0].default_outputs[0], format="{}/bin/rustc"),
@@ -72,7 +72,7 @@ __toolchain = nix.macros.toolchain_rule(
 
 ## ---------------------------------------------------------------------------------------------------------------------
 
-def __binary_impl(ctx: "context") -> ["provider"]:
+def __binary_impl(ctx: AnalysisContext) -> list[Provider]:
     toolchain = ctx2toolchain(ctx)
     name = ctx.attrs.out if ctx.attrs.out else ctx.label.name
     identifier = ctx.attrs.file.basename

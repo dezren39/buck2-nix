@@ -109,7 +109,6 @@ __constraint_setting = rule(
     doc = """A rule that simply declares the existence of a constraint.""",
     impl = _constraint_setting_impl,
     attrs = {
-        "within_view": attrs.option(attrs.option(attrs.list(attrs.string())), default = None),
     },
     is_configuration_rule = True,
 )
@@ -121,7 +120,6 @@ __constraint_value = rule(
     impl = _constraint_value_impl,
     attrs = {
         "constraint": attrs.configuration_label(),
-        "within_view": attrs.option(attrs.option(attrs.list(attrs.string())), default = None),
     },
     is_configuration_rule = True,
 )
@@ -138,7 +136,6 @@ __config_setting = rule(
     attrs = {
         "constraints": attrs.list(attrs.configuration_label(), default = []),
         "values": attrs.dict(key = attrs.string(), value = attrs.string(), sorted = False, default = {}),
-        "within_view": attrs.option(attrs.option(attrs.list(attrs.string())), default = None),
     },
     is_configuration_rule = True,
 )
@@ -149,10 +146,24 @@ __platform = rule(
     attrs = {
         "constraints": attrs.list(attrs.configuration_label(), default = []),
         "deps": attrs.list(attrs.configuration_label(), default = []),
-        "within_view": attrs.option(attrs.option(attrs.list(attrs.string())), default = None),
     },
     is_configuration_rule = True,
 )
+
+def __declare_with_values(name, values, visibility):
+    """Declare a constraint setting with a set of values."""
+
+    __constraint_setting(
+        name = name,
+        visibility = visibility,
+    )
+
+    for value in values:
+        __constraint_value(
+            name = value,
+            constraint = ":{}".format(name),
+            visibility = visibility,
+        )
 
 config = struct(
     platform = __platform,
@@ -160,6 +171,7 @@ config = struct(
     constraint = struct(
         declare = __constraint_setting,
         value = __constraint_value,
+        declare_with_values = __declare_with_values,
     ),
 )
 
